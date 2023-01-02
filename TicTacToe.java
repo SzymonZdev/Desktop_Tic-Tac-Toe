@@ -259,7 +259,7 @@ public class TicTacToe extends JFrame {
         for (BoardCell cell: cells
              ) {
             cell.setEnabled(true);
-            cell.setForeground(Color.RED);
+            cell.setForeground(Color.GREEN);
         }
     }
 
@@ -578,10 +578,23 @@ public class TicTacToe extends JFrame {
                 }
                 if (!gameOver) {
                     if ((player1Button.getText().contains("Robot") && xTurn || player2Button.getText().contains("Robot") && !xTurn)) {
-                        clickRandom();
+                        if (count == 0){
+                            clickCorner();
+                        } else {
+                            clickRandom();
+                        }
                     }
                 }});
+        }
 
+        private static void clickCorner() {
+            List<Integer> corners = new ArrayList<>();
+            corners.add(0);
+            corners.add(2);
+            corners.add(6);
+            corners.add(8);
+            Random random = new Random();
+            cells.get(corners.get(random.nextInt(4))).doClick();
         }
 
         private static void clickRandom() {
