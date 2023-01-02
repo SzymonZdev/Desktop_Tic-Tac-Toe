@@ -19,6 +19,7 @@ public class TicTacToe extends JFrame {
     static List<BoardCell> cells = new ArrayList<>();
     static JButton player1Button = new JButton();
     static JButton player2Button = new JButton();
+    JPanel boardPanel = new BoardClass();
 
     static String gameState;
 
@@ -27,22 +28,29 @@ public class TicTacToe extends JFrame {
     public TicTacToe() {
         SwingUtilities.invokeLater(this::createAndShowGUI);
         updateStatusLabel();
-
     }
 
     public void endGame() {
         gameOver = true;
         BoardClass.disableBoard();
     }
+    public void endGame(String type, int which) {
+        gameOver = true;
+        BoardClass.disableBoard();
+        highlightWin(type, which);
+    }
 
     private void updateStatusLabel() {
         SwingWorker<String, String> worker = new SwingWorker<>() {
             @Override
-            protected String doInBackground() throws Exception {
-                while (true) {
+            protected String doInBackground() {
+                while (!gameOver) {
                     updateGameState();
                     statusLabel.setText(gameState);
                 }
+                updateGameState();
+                statusLabel.setText(gameState);
+                return null;
             }
         };
 
@@ -50,8 +58,6 @@ public class TicTacToe extends JFrame {
     }
 
     private void updateGameState() {
-        // The turn of Human/Robot Player (X/O)
-        // The Human/Robot (X/O) Player wins!
         if (!gameStarted) {
             gameState = "Game is not started";
         } else if (gameOver) {
@@ -100,7 +106,6 @@ public class TicTacToe extends JFrame {
         playerBar.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
         add(playerBar, BorderLayout.NORTH);
 
-        JPanel boardPanel = new BoardClass();
         boardPanel.setSize(300, 300);
         add(boardPanel, BorderLayout.CENTER);
 
@@ -122,10 +127,10 @@ public class TicTacToe extends JFrame {
                     continue;
                 }
                 if (sum == 3) {
-                    endGame();
+                    endGame("Column", i);
                     return "X";
                 } else if (sum == -3) {
-                    endGame();
+                    endGame("Column", i);
                     return "O";
                 }
             }
@@ -141,10 +146,10 @@ public class TicTacToe extends JFrame {
                     continue;
                 }
                 if (sum == 3) {
-                    endGame();
+                    endGame("Row", i);
                     return "X";
                 } else if (sum == -3) {
-                    endGame();
+                    endGame("Row", i);
                     return "O";
                 }
             }
@@ -154,11 +159,11 @@ public class TicTacToe extends JFrame {
         try {
             int sum = boardStatus[0][0] + boardStatus[1][1] + boardStatus[2][2];
             if (sum == -3) {
-                endGame();
+                endGame("Diagonal", 0);
                 return "O";
             }
             if (sum == 3) {
-                endGame();
+                endGame("Diagonal", 0);
                 return "X";
             }
         } catch (NullPointerException ignored) {
@@ -166,11 +171,11 @@ public class TicTacToe extends JFrame {
         try {
             int sum = boardStatus[2][0] + boardStatus[1][1] + boardStatus[0][2];
             if (sum == -3) {
-                endGame();
+                endGame("Diagonal", 1);
                 return "O";
             }
             if (sum == 3) {
-                endGame();
+                endGame("Diagonal", 1);
                 return "X";
             }
         } catch (NullPointerException ignored) {
@@ -182,12 +187,88 @@ public class TicTacToe extends JFrame {
         return "None";
     }
 
+    private void highlightWin(String type, int which) {
+        List<BoardCell> winningCells = new ArrayList<>();
+        switch (type) {
+            case "Row" -> {
+                switch (which) {
+                    case 0 -> {
+                        winningCells.add(cells.get(6));
+                        winningCells.add(cells.get(7));
+                        winningCells.add(cells.get(8));
+                        setWinningCells(winningCells);
+                    }
+                    case 1 -> {
+                        winningCells.add(cells.get(3));
+                        winningCells.add(cells.get(4));
+                        winningCells.add(cells.get(5));
+                        setWinningCells(winningCells);
+                    }
+                    case 2 -> {
+                        winningCells.add(cells.get(0));
+                        winningCells.add(cells.get(1));
+                        winningCells.add(cells.get(2));
+                        setWinningCells(winningCells);
+                    }
+                }
+            }
+            case "Column" -> {
+                switch (which) {
+                    case 0 -> {
+                        winningCells.add(cells.get(6));
+                        winningCells.add(cells.get(3));
+                        winningCells.add(cells.get(0));
+
+                        setWinningCells(winningCells);
+                    }
+                    case 1 -> {
+                        winningCells.add(cells.get(7));
+                        winningCells.add(cells.get(4));
+                        winningCells.add(cells.get(1));
+                        setWinningCells(winningCells);
+                    }
+                    case 2 -> {
+                        winningCells.add(cells.get(8));
+                        winningCells.add(cells.get(5));
+                        winningCells.add(cells.get(2));
+                        setWinningCells(winningCells);
+                    }
+                }
+            }
+            case "Diagonal" -> {
+                switch (which) {
+                    case 0 -> {
+                        winningCells.add(cells.get(6));
+                        winningCells.add(cells.get(4));
+                        winningCells.add(cells.get(2));
+                        setWinningCells(winningCells);
+                    }
+                    case 1 -> {
+                        winningCells.add(cells.get(0));
+                        winningCells.add(cells.get(4));
+                        winningCells.add(cells.get(8));
+                        setWinningCells(winningCells);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void setWinningCells(List<BoardCell> cells) {
+        for (BoardCell cell: cells
+             ) {
+            cell.setEnabled(true);
+            cell.setForeground(Color.RED);
+        }
+    }
+
     class BoardClass extends JPanel {
         public static JButton ButtonA1, ButtonA2, ButtonA3, ButtonB1, ButtonB2, ButtonB3, ButtonC1, ButtonC2, ButtonC3;
 
         BoardClass() {
             super();
-            setLayout(new GridLayout(3, 3));
+            setLayout(new GridLayout(3, 3, 2, 2));
             ButtonA3 = new BoardCell(2, 0);
             ButtonA3.setName("ButtonA3");
             cells.add((BoardCell) ButtonA3);
@@ -309,6 +390,7 @@ public class TicTacToe extends JFrame {
 
         public static void resetCell(BoardCell cell) {
             cell.setText(" ");
+            cell.setForeground(Color.WHITE);
             cell.isNotClicked = true;
             cell.setEnabled(false);
         }
@@ -337,7 +419,7 @@ public class TicTacToe extends JFrame {
         }
     }
 
-    class MenuBar extends JMenuBar {
+    static class MenuBar extends JMenuBar {
         JMenu menuGame;
         JMenuItem menuHumanHuman;
         JMenuItem menuHumanRobot;
@@ -459,6 +541,7 @@ public class TicTacToe extends JFrame {
                     gameStarted = false;
                     count = 0;
                     boardStatus = new Integer[3][3];
+                    updateStatusLabel();
 
                 }
                 ComputerPlayer.makeMove();
